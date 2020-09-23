@@ -5,7 +5,9 @@ import pickle
 import math
 postcodes = {}
 vals = {}
+dates = {}
 markers = []
+allvals = []
 try:
     postcodes = pickle.load( open( "pc.p", "rb" ) )
 except IOError:
@@ -14,13 +16,26 @@ f = urllib2.urlopen('https://data.rivm.nl/covid-19/COVID-19_rioolwaterdata.json'
 data = json.loads(f.read())
 for block in data:
   pc = block['Postal_code']
-  if pc not in postcodes:
-      f = urllib2.urlopen('https://api.opencagedata.com/geocode/v1/json?q='+pc+'%20Nederland&key=5ef2349fa1a8489fad3a33c34ff4b15a&no_annotations=1&language=nl')
-      geo = json.loads(f.read())['results'][0]['geometry']
-      postcodes[pc] = geo
-      pickle.dump( postcodes, open( "pc.p", "wb" ) )
-  vals[pc] = block['RNA_per_ml']
-percolor = float(256*2) / math.log(max(vals.values()))
+  if pc != '':
+      if pc not in postcodes:
+            print(pc)
+            print(block)
+            f = urllib2.urlopen('https://api.opencagedata.com/geocode/v1/json?q='+pc+'%20'+'%20'+(block['RWZI_AWZI_name'].replace(' ','%20'))+'%20Netherlands&key=5ef2349fa1a8489fad3a33c34ff4b15a&no_annotations=1&language=nl')
+            data = f.read()
+            js = json.loads(data)
+            for res in js['results']:
+                if (res['components']['_type'] == 'neighbourhood' and res['components']['country_code']=='nl') or res['components']['_type'] == 'postcode' or 'postcode' in res['components'] and res['components']['postcode'] == str(pc):
+                    geo = res['geometry']
+                    postcodes[pc] = geo
+                    pickle.dump( postcodes, open( "pc.p", "wb" ) )
+                    break;
+            if pc not in postcodes:
+                print js['results']
+                postcodes[pc] = js['results'][0]['geometry']
+      vals[pc] = block['RNA_per_ml']
+      dates[pc] = block['Date_measurement']
+
+percolor = float(256*2) / math.log(1041 if max(vals.values()) < 1041 else max(vals.values()))
 for pc in vals:
   value = (math.log(int(vals[pc])) if int(vals[pc])> 0 else 0) * percolor
   if value >= 256 :
@@ -32,7 +47,7 @@ for pc in vals:
   markers.append({
      "type": "Feature",
      "properties": {
-       "marker-color": "#%02x%02x00" % (red,green), "marker-size": "medium", "marker-symbol": "", "location": pc, "value": vals[pc]
+       "marker-color": "#%02x%02x00" % (red,green), "marker-size": "medium", "marker-symbol": "", "location": pc, "value": vals[pc], "date": dates[pc]
      },
      "geometry": {
        "type": "Point",
