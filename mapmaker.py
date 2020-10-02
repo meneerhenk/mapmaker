@@ -65,7 +65,10 @@ for pc in vals:
     markers.append({
         "type": "Feature",
         "properties": {
-            "marker-color": "#%02x%02x00" % (red, green), "marker-size": "medium", "marker-symbol": "", "location": pc,
+            "marker-color": "#%02x%02x00" % (red, green),
+            "marker-size": "medium",
+            "marker-symbol": "",
+            "location": pc,
             "value": vals[pc], "date": dates[pc]
         },
         "geometry": {
