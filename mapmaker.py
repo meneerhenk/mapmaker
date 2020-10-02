@@ -55,7 +55,7 @@ for block in data:
 
 percolor = float(256 * 2) / math.log(1041 if max(vals.values()) < 1041 else max(vals.values()))
 for pc in vals:
-    value = (math.log(int(vals[pc])) if int(vals[pc]) > 0 else 0) * percolor
+    value = int((math.log(int(vals[pc])) if int(vals[pc]) > 0 else 0) * percolor)
     if value >= 256:
         red = 255
         green = 256 - (value - 256)
@@ -65,8 +65,8 @@ for pc in vals:
     markers.append({
         "type": "Feature",
         "properties": {
-            "marker-color": "#%02x%02x00" % (red, green),
             "marker-size": "medium",
+            "marker-color": "#%02x%02x00" % (red, green),
             "marker-symbol": "",
             "location": pc,
             "value": vals[pc], "date": dates[pc]
